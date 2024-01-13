@@ -24,12 +24,13 @@ class Schedule(models.Model):
 
     def add_person(self, userdata, changed):
         if self.userdata_set.count() >= self.max_enrolled:
-            logger.info(f"{userdata.name} Schedule Count >= max_enrolled")
+            logger.warning(f"{userdata.name} Schedule Count >= max_enrolled. target={self.name}")
             return "limit"
         if changed:
             sch = userdata.schedule
             sch.available += 1
             sch.save()
+            logger.warning(f"{userdata.name} Changed. from={sch.name} target={self.name}")
         userdata.schedule = self
         userdata.save()
         self.available = self.max_enrolled - self.userdata_set.count()
@@ -46,6 +47,10 @@ class UserData(models.Model):
     def __str__(self):
         return str(self.user.username)
 
+class AdminControl(models.Model):
+    name = models.CharField(max_length=20)
+    active = models.BooleanField(default=False)
+    
 
 
 

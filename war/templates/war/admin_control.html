@@ -1,0 +1,44 @@
+{% extends "war/_home.html" %}
+{% load static %}
+
+{% block content %}
+    {% load widget_tweaks %}
+
+    {% if messages %}
+        <div class="alert alert-success">
+            {% for message in messages %}
+                {{ message }}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" action="{% url 'admin_control' %}" novalidate>
+        {% csrf_token %}
+
+        <table align="center">
+            {% for ses in session %}
+            <tr>
+            <td>{{ ses.name }}</td>
+            <td><input type="checkbox" name="session" value="{{ses.name}}"></td>
+            </tr>
+            {% endfor %}
+            </table>
+        <button type="submit" name="command" value="regenerate_schedule" class="btn btn-primary btn-block"> Regenerate Schedule </button>
+        
+            <br>
+            <table align="center">
+            {% for control in controller %}
+            <tr>
+            <td>{{ control.name }}</td>
+            {% if control.active == True %}
+                <td><input onChange="this.form.submit()" type="checkbox" name="command" value="{{control.name}}" checked></td>
+            {% else %}
+                <td><input onChange="this.form.submit()" type="checkbox" name="command" value="{{control.name}}"></td>
+            {% endif %}
+            </tr>
+            {% endfor %}
+            </table>
+
+    </form>
+
+{% endblock content %}
