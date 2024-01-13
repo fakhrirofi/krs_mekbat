@@ -1,6 +1,11 @@
 {% extends "war/_home.html" %}
 {% load static %}
 
+{% block head %}
+    <title>Home - Mekanika Batuan 2023/2024</title>
+    {# <link rel="stylesheet" href="{% static 'war/css/style.css' %}"> #}
+{% endblock head %}
+
 {% block content %}
 
     {% if session %}
