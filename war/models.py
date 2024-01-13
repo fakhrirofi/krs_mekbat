@@ -1,8 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+import logging
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
 class Session(models.Model):
     name = models.CharField(max_length=30)
+    slug = models.SlugField(max_length=20)
     active = models.BooleanField(default=True)
 
     def __str__(self):
@@ -12,15 +17,24 @@ class Schedule(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     max_enrolled = models.IntegerField(default=7)
+    available = models.IntegerField(default=7)
 
     def __str__(self):
         return self.name
 
-    def add_person(self, person):
+    def add_person(self, userdata, changed):
         if self.userdata_set.count() >= self.max_enrolled:
-            raise Exception("The session you selected is Full")
-        person.schedule = self
-        person.save()
+            logger.info(f"{userdata.name} Schedule Count >= max_enrolled")
+            return "limit"
+        if changed:
+            sch = userdata.schedule
+            sch.available += 1
+            sch.save()
+        userdata.schedule = self
+        userdata.save()
+        self.available = self.max_enrolled - self.userdata_set.count()
+        self.save()
+        return "success"
 
 class UserData(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

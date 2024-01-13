@@ -5,7 +5,7 @@ from .models import UserData
 class RegistrationForm(forms.Form):
     name = forms.CharField(widget=forms.TextInput(), label="Nama")
     handphone = forms.CharField(widget=forms.TextInput(), label="No. Handphone")
-    nim = forms.CharField(widget=forms.TextInput(), label="NIM")
+    nim = forms.CharField(widget=forms.TextInput(), label="NIM (Contoh: 112220001)")
     password = forms.CharField(widget=forms.PasswordInput())
 
     def save(self, commit=True):
