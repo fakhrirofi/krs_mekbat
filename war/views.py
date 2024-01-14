@@ -1,10 +1,10 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, redirect
 from .forms import RegistrationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Session, UserData, Schedule, AdminControl
+from .models import Session, Schedule, AdminControl
 from django.contrib import messages
 
 import logging
@@ -46,37 +46,7 @@ def register(request):
 
 @login_required
 def krs_war(request, slug):
-    user = request.user
-    session = get_object_or_404(Session, slug=slug)
-    if not session.active:
-        return redirect('home')
-    if request.method == "POST":
-        pk = request.POST.getlist('pk')
-        if len(pk) == 0:
-            userdata = user.userdata
-            sch = userdata.schedule
-            if sch:
-                logger.warning(f"{userdata.name} blank. from={sch.name}")
-                sch.available += 1
-                sch.save()
-            userdata.schedule = None
-            userdata.save()
-        else:
-            changed = False
-            if user.userdata.schedule:
-                pk.remove(str(user.userdata.schedule.pk))
-                changed = True
-            if len(pk):
-                pk = int(pk[0])
-                schedule = Schedule.objects.get(pk=pk)
-                logger.info(f"{user.userdata.name} checked target={schedule.name}")
-                status = schedule.add_person(user.userdata, changed)
-                if status == "limit":
-                    messages.info(request, "Sesi yang anda pilih telah penuh, silakan pilih sesi lainnya!")
-    return render(request, 'war/krs_war.html', {
-        "schedule": session.schedule_set.all(),
-        "session": session,
-    })
+    return render(request, 'war/krs_war.html')
 
 @login_required
 def admin_control(request):

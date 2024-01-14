@@ -7,24 +7,10 @@
 
 {% block content %}
 
-    <div class="alert alert-success">
-    {% if user.userdata.schedule %}
-        Jadwal Praktikum Anda: {{ user.userdata.schedule.name }}
-    {% else %}
-        Anda belum memilih jadwal praktikum
-    {% endif %}
-    </div>
+    <div id="infoSelected" class="alert alert-success"></div>
 
-    {% if messages %}
-        <div class="alert alert-danger">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
-        </div>
-    {% endif %}
+    {# <div id="alertMessage" class="hidden"></div> #}
 
-    <form method="post" action="{% url 'krs_war' session.slug %}" novalidate>
-    {% csrf_token %}
     <table class="styled-table">
     <thead>
         <tr>
@@ -33,25 +19,8 @@
             <th>Tersedia</th>
         </tr>
     </thead>
-    <tbody>
-    {% for sch in schedule %}
-        {% if sch.pk == user.userdata.schedule.pk %}
-        <tr class="active-row">
-        {% else %}
-        <tr>
-        {% endif %}
-            <td>{{sch.name}}</td>
-            <td align="center">{{sch.max_enrolled}}</td>
-            <td align="center">{{sch.available}}</td>
-            {% if sch.pk == user.userdata.schedule.pk %}
-            <td align="center"><input onChange="this.form.submit()" type="checkbox" name="pk" value="{{ sch.pk }}" checked></td>
-            {% else %}
-            <td align="center"><input onChange="this.form.submit()" type="checkbox" name="pk" value="{{ sch.pk }}"></td>
-            {% endif %}
-            {# bikin form checklist, kalo diklik auto submit, id pake primary key schedule #}
-        </tr>
-    {% endfor %}
+    <tbody id="tableList">
+    <script src="{% static 'war/js/tbody_krs.js' %}"></script>
     </tbody>
     </table>
-    </form>
 {% endblock content %}
