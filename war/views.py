@@ -100,6 +100,13 @@ def admin_control(request):
                                 for section in ["A", "B"]:
                                     sch = Schedule(session=_ses, name=f"{day} {time} | {section}")
                                     sch.save()
+                if command == "empty_schedule":
+                    for ses in session:
+                        _ses = Session.objects.get(name=ses)
+                        for sch in _ses.schedule_set.all():
+                            for userdata in sch.userdata_set.all():
+                                userdata.schedule = None
+                                userdata.save()
                 messages.info(request, f"{command} success")
             except Exception as ex:
                 messages.info(request, ex)

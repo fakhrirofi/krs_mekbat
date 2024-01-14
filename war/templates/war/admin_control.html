@@ -18,6 +18,7 @@
     <form method="post" action="{% url 'admin_control' %}" novalidate>
         {% csrf_token %}
 
+        <h6 align="center">Session Control</h6>
         <table align="center">
             {% for ses in session %}
             <tr>
@@ -27,8 +28,9 @@
             {% endfor %}
             </table>
         <button type="submit" name="command" value="regenerate_schedule" class="btn btn-primary btn-block"> Regenerate Schedule </button>
-        
+        <button type="submit" name="command" value="empty_schedule" class="btn btn-primary btn-block"> Empty Schedule </button>
             <br>
+            <h6 align="center">Web Properties</h6>
             <table align="center">
             {% for control in controller %}
             <tr>
