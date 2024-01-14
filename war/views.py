@@ -39,9 +39,7 @@ def register(request):
                 messages.info(request, "NIM telah didaftarkan, hubungi asisten Laboratorium jika ingin mengganti password!")
             else:
                 user = form.save()
-                return redirect("index")
-        else:
-            HttpResponse("form invalid", 400)
+                return redirect("login")
     form = RegistrationForm()
     return render(request=request, template_name="war/register.html",
             context={"form":form})
@@ -104,9 +102,9 @@ def admin_control(request):
                     for ses in session:
                         _ses = Session.objects.get(name=ses)
                         for sch in _ses.schedule_set.all():
-                            for userdata in sch.userdata_set.all():
-                                userdata.schedule = None
-                                userdata.save()
+                            sch.userdata_set.clear()
+                            sch.available = sch.max_enrolled - sch.userdata_set.count()
+                            sch.save()
                 messages.info(request, f"{command} success")
             except Exception as ex:
                 messages.info(request, ex)
