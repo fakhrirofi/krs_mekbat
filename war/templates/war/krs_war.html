@@ -8,8 +8,6 @@
 
 {% block content %}
 
-    {% load widget_tweaks %}
-
     <div class="alert alert-success">
     {% if user.userdata.schedule %}
         Jadwal Praktikum Anda: {{ user.userdata.schedule.name }}
