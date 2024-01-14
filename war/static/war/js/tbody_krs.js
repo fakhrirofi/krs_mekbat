@@ -97,6 +97,11 @@ function generateTable() {
             tr.classList.add("active-row");
         };
         
+        let td0 = document.createElement('td');
+        td0.align = 'center';
+        td0.innerText = i + 1;
+        tr.appendChild(td0);
+
         let td1 = document.createElement('td');
         td1.innerText = schedule[i]['name'];
         tr.appendChild(td1);

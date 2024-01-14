@@ -39,7 +39,7 @@ class Schedule(models.Model):
 
 class UserData(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    schedule = models.ForeignKey(Schedule, on_delete=models.CASCADE, null=True, blank=True)
+    schedule = models.ForeignKey(Schedule, on_delete=models.SET_NULL, null=True, blank=True)
     nim = models.IntegerField()
     name = models.CharField(max_length=50)
     handphone = models.CharField(max_length=15)

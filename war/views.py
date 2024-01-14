@@ -64,9 +64,13 @@ def admin_control(request):
                         for sch in _ses.schedule_set.all():
                             sch.delete()
                         for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
-                            for time in ["7.00 - 9.00", "10.00 - 12.00", "13.00 - 15.00"]:
-                                for section in ["A", "B"]:
-                                    sch = Schedule(session=_ses, name=f"{day} {time} | {section}")
+                            if day == "Jumat":
+                                times = ["7.00 - 9.00", "13.00 - 15.00", "15.30 - 17.30"]
+                            else:
+                                times = ["7.00 - 9.00", "10.00 - 12.00", "13.00 - 15.00"]
+                            for time in times:
+                                for _ in range(2):
+                                    sch = Schedule(session=_ses, name=f"{day} {time}")
                                     sch.save()
                 if command == "empty_schedule":
                     for ses in session:
