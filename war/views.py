@@ -3,6 +3,7 @@ from .forms import RegistrationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from .models import Session, UserData, Schedule, AdminControl
 from django.contrib import messages
 
@@ -33,8 +34,12 @@ def register(request):
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            return redirect("index")
+            nim = form.cleaned_data['nim']
+            if User.objects.filter(username=nim):
+                messages.info(request, "NIM telah didaftarkan, hubungi asisten Laboratorium jika ingin mengganti password!")
+            else:
+                user = form.save()
+                return redirect("index")
         else:
             HttpResponse("form invalid", 400)
     form = RegistrationForm()
