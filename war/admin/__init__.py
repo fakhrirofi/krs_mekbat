@@ -49,6 +49,9 @@ class UserDataAdmin(ModelAdmin):
     ordering = ['schedule']
 
     def schedule(self, obj):
-        return obj.schedule.name
+        if obj.schedule:
+            return obj.schedule.name
+        else:
+            return "-"
 
 admin.site.register(UserData, UserDataAdmin)
