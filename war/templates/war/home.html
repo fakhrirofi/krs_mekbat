@@ -9,10 +9,7 @@
 
     {% if session %}
         {% for ses in session %}
-            {% if ses.active == True %}
-                <p><center><a href="{% url 'krs_war' ses.slug%}">{{ ses.name }}</a></center></p>
-            {% else %}
-            {% endif %}
+            <p><center><a href="{% url 'krs_war' ses.slug%}">{{ ses.name }}</a></center></p>
         {% endfor %}
     {% else %}
         <p><center>Sesi pemilihan jadwal praktikum belum tersedia saat ini</center></p>

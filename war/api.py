@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Session, Schedule
+from django.utils import timezone
 import json
 
 import logging
@@ -11,7 +12,7 @@ logger = logging.getLogger(__name__)
 @login_required
 def krs_war(request, slug):
     session = get_object_or_404(Session, slug=slug)
-    if not session.active:
+    if (not session.active) and (timezone.now() < session.open_time):
         return redirect('home')
     if request.method == "GET":
         schedule = list()

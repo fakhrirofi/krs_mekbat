@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from .models import Session, Schedule, AdminControl
 from django.contrib import messages
+from django.utils import timezone
 
 import logging
 # Get an instance of a logger
@@ -17,8 +18,10 @@ class CustomLoginView(LoginView):
 
 @login_required
 def home(request):
-    session = Session.objects.filter(active=True)
-    return render(request=request, template_name="war/home.html", context={"session":session})
+    session = Session.objects.filter(active=True, open_time__lt=timezone.now())
+    return render(request, "war/home.html", {
+        "session"       : session,
+        })
 
 @login_required
 def logout_user(request):
@@ -47,7 +50,7 @@ def register(request):
 @login_required
 def krs_war(request, slug):
     session = get_object_or_404(Session, slug=slug)
-    if not session.active:
+    if (not session.active) and (timezone.now() < session.open_time) :
         return redirect('home')
     return render(request, 'war/krs_war.html')
 
