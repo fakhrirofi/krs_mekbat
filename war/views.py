@@ -50,7 +50,7 @@ def register(request):
 @login_required
 def krs_war(request, slug):
     session = get_object_or_404(Session, slug=slug)
-    if (not session.active) and (timezone.now() < session.open_time) :
+    if (not session.active) or (timezone.now() < session.open_time) :
         return redirect('home')
     return render(request, 'war/krs_war.html')
 
