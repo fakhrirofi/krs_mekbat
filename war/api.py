@@ -10,8 +10,10 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def krs_war(request, slug):
+    session = get_object_or_404(Session, slug=slug)
+    if not session.active:
+        return redirect('home')
     if request.method == "GET":
-        session = get_object_or_404(Session, slug=slug)
         schedule = list()
         for sch in session.schedule_set.all():
             schedule.append({

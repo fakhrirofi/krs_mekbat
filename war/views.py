@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import RegistrationForm
 from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
@@ -46,6 +46,9 @@ def register(request):
 
 @login_required
 def krs_war(request, slug):
+    session = get_object_or_404(Session, slug=slug)
+    if not session.active:
+        return redirect('home')
     return render(request, 'war/krs_war.html')
 
 @login_required
