@@ -11,11 +11,14 @@ class SessionInline(admin.TabularInline):
     extra = 1
 
 class SessionAdmin(ModelAdmin):
-    list_display = ['name', 'slug', 'total', 'active']
+    list_display = ['name', 'slug', 'schedule', 'open_time', 'registered', 'active']
     inlines = [SessionInline]
 
-    def total(self, obj):
+    def schedule(self, obj):
         return obj.schedule_set.count()
+
+    def registered(self, obj):
+        return sum(schedule.userdata_set.count() for schedule in obj.schedule_set.all())
 
 admin.site.register(Session, SessionAdmin)
 
@@ -43,7 +46,7 @@ admin.site.register(Schedule, ScheduleAdmin)
 
 class UserDataAdmin(ModelAdmin):
     list_display_links = ['nim']
-    list_display = ['schedule', 'nim', 'name', 'handphone']
+    list_display = ['sch_pk', 'schedule', 'nim', 'name', 'handphone']
     search_fields = ['name', 'nim']
     list_filter = ['schedule']
     ordering = ['schedule']
@@ -51,6 +54,12 @@ class UserDataAdmin(ModelAdmin):
     def schedule(self, obj):
         if obj.schedule:
             return obj.schedule.name
+        else:
+            return "-"
+
+    def sch_pk(self, obj):
+        if obj.schedule:
+            return obj.schedule.pk
         else:
             return "-"
 
