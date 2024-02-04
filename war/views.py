@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from .models import Session, Schedule, AdminControl
 from django.contrib import messages
 from django.utils import timezone
+from django.urls import reverse
 
 import logging
 # Get an instance of a logger
@@ -26,14 +27,14 @@ def home(request):
 @login_required
 def logout_user(request):
     logout(request)
-    return redirect("login")
+    return redirect(reverse("blog:index"))
 
 def index(request):
-    return redirect("login")
+    return redirect(reverse("war:login"))
 
 def register(request):
     if request.user.is_authenticated:
-        return redirect("home")
+        return redirect(reverse("war:home"))
     if request.method == "POST":
         form = RegistrationForm(request.POST)
         if form.is_valid():
@@ -42,7 +43,7 @@ def register(request):
                 messages.info(request, "NIM telah didaftarkan, hubungi asisten Laboratorium jika ingin mengganti password!")
             else:
                 user = form.save()
-                return redirect("login")
+                return redirect(reverse("war:login"))
     form = RegistrationForm()
     return render(request=request, template_name="war/register.html",
             context={"form":form})
@@ -51,13 +52,13 @@ def register(request):
 def krs_war(request, slug):
     session = get_object_or_404(Session, slug=slug)
     if (not session.active) or (timezone.now() < session.open_time) :
-        return redirect('home')
+        return redirect(reverse("war:home"))
     return render(request, 'war/krs_war.html')
 
 @login_required
 def admin_control(request):
     if not request.user.is_staff:
-        return redirect('home')
+        return redirect(reverse("war:home"))
     if request.method == "POST":
         commands = request.POST.getlist('command')
         session = request.POST.getlist('session')

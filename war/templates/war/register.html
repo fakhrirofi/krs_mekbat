@@ -10,7 +10,7 @@
 <div class="container mb-5 mt-5 pl-5 pr-5">
   <h3 class="">Registration Form</h3>
   <hr class="mb-4">
-  {# <form action="{% url 'registration' event.name %}" method="post" enctype="multipart/form-data"> #}
+  {# <form action="{% url 'war:registration' event.name %}" method="post" enctype="multipart/form-data"> #}
   <form action="" method="post">
     {% csrf_token %}
     {{ form|crispy }}

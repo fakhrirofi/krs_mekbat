@@ -14,7 +14,7 @@
         </div>
     {% endif %}
 
-    <form method="post" action="{% url 'admin_control' %}" novalidate>
+    <form method="post" action="{% url 'war:admin_control' %}" novalidate>
         {% csrf_token %}
 
         <h6 align="center">Session Control</h6>

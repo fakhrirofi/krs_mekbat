@@ -16,6 +16,7 @@ class Session(models.Model):
 
 class Schedule(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
+    group_number = models.IntegerField("Kelompok")
     name = models.CharField(max_length=50)
     max_enrolled = models.IntegerField(default=7)
     available = models.IntegerField(default=7)

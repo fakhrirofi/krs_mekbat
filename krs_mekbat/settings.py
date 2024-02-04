@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'war.apps.WarConfig',
+    'blog.apps.BlogConfig',
     'crispy_forms',
     'crispy_bootstrap5',
     'widget_tweaks'
@@ -182,3 +183,5 @@ LOGGING = {
         },
     },
 }
+
+LOGIN_REDIRECT_URL = "/krs/home/"

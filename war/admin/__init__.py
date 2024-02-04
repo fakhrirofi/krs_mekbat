@@ -28,7 +28,7 @@ class ScheduleInline(admin.TabularInline):
     extra = 1
 
 class ScheduleAdmin(ModelAdmin):
-    list_display = ['session', 'name', 'max_enrolled', 'enrolled', 'available']
+    list_display = ['session', 'group_number', 'name', 'max_enrolled', 'enrolled', 'available']
     ordering = ['pk']
     list_filter = ['session']
     inlines = [ScheduleInline]
@@ -46,7 +46,7 @@ admin.site.register(Schedule, ScheduleAdmin)
 
 class UserDataAdmin(ModelAdmin):
     list_display_links = ['nim']
-    list_display = ['sch_pk', 'schedule', 'nim', 'name', 'handphone']
+    list_display = ['group_number', 'schedule', 'nim', 'name', 'handphone']
     search_fields = ['name', 'nim']
     list_filter = ['schedule']
     ordering = ['schedule']
@@ -57,9 +57,9 @@ class UserDataAdmin(ModelAdmin):
         else:
             return "-"
 
-    def sch_pk(self, obj):
+    def group_number(self, obj):
         if obj.schedule:
-            return obj.schedule.pk
+            return obj.schedule.group_number
         else:
             return "-"
 

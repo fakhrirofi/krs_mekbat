@@ -1,0 +1,36 @@
+.post {
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+    margin: 20px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.post-title {
+    color: #333;
+}
+
+.post-meta {
+    color: #777;
+    font-size: 0.8em;
+}
+
+.post-author {
+    font-weight: bold;
+}
+
+.post-date {
+    font-style: italic;
+}
+
+.post-content {
+    margin-top: 20px;
+    line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .post {
+        margin: 10px;
+    }
+}

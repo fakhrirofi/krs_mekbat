@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Session, Schedule
 from django.utils import timezone
 import json
+from django.urls import reverse
 
 import logging
 # Get an instance of a logger
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 def krs_war(request, slug):
     session = get_object_or_404(Session, slug=slug)
     if (not session.active) or (timezone.now() < session.open_time):
-        return redirect('home')
+        return redirect(reverse('war:home'))
     if request.method == "GET":
         schedule = list()
         for sch in session.schedule_set.all():

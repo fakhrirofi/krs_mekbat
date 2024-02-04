@@ -9,6 +9,7 @@
 
 {% load static %}
 <link rel="stylesheet" href="{% static 'war/css/home_style.css' %}">
+<link rel="stylesheet" href="{% static 'blog/css/home_style.css' %}">
 
 {% block head %}
 
@@ -24,9 +25,9 @@
 <div class="col">
 <div class="card">
 <header class="card-header">
-	<a href="{% url 'war:logout' %}" class="float-right btn btn-outline-primary mt-1">Log out</a>
-  <a href="{% url 'war:logout' %}" class="float-right btn btn-outline-primary mt-1 mr-3">QR Code</a>
-	<h6 class="card-title mt-2">{{ user.username }} | {{ user.userdata.name }}</h6>
+	<a href="{% url 'war:login' %}" class="float-right btn btn-outline-primary mt-1">Log in</a>
+  {# <a href="{% url 'war:logout' %}" class="float-right btn btn-outline-primary mt-1 mr-3">QR Code</a> #}
+	<h6 class="card-title mt-2">Laboratorium Mekanika Batuan</h6>
 </header>
 <article class="card-body">
     {% block content %}
