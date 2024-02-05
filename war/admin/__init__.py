@@ -29,7 +29,7 @@ class ScheduleInline(admin.TabularInline):
 
 class ScheduleAdmin(ModelAdmin):
     list_display = ['name', 'group_number', 'max_enrolled', 'enrolled', 'available']
-    ordering = ['session__pk', 'schedule__group_number']
+    ordering = ['session__pk', 'group_number']
     list_filter = ['session']
     inlines = [ScheduleInline]
 
@@ -56,12 +56,6 @@ class UserDataAdmin(ModelAdmin):
             return obj.schedule.session
         else:
             "-"
-
-    def schedule(self, obj):
-        if obj.schedule:
-            return obj.schedule.name
-        else:
-            return "-"
 
     def group_number(self, obj):
         if obj.schedule:
@@ -108,9 +102,6 @@ class PresenceAdmin(ModelAdmin):
 
     def session(self, obj):
         return obj.event.session.name
-    
-    def event(self, obj):
-        return obj.event.name
 
     def user_count(self, obj):
         return obj.presencedata_set.count()

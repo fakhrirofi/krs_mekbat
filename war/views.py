@@ -108,13 +108,19 @@ def admin_control(request):
                         event = Event.objects.get(name=eve)
                         _temp_sch_name = None
                         for sch in event.session.schedule_set.all():
+
                             if sch.name != _temp_sch_name:
-                                presence = Presence(name=sch.name, event=event)
-                                presence.save()
+                                presence = Presence.objects.filter(name=sch.name, event=event).first()
+                                if not presence:
+                                    presence = Presence(name=sch.name, event=event)
+                                    presence.save()
                                 _temp_sch_name = sch.name
+
                             for userdata in sch.userdata_set.all():
-                                presencedata = PresenceData(user=userdata.user, presence=presence)
-                                presencedata.save()
+                                presencedata = PresenceData.objects.filter(user=userdata.user, presence=presence).first()
+                                if not presencedata:
+                                    presencedata = PresenceData(user=userdata.user, presence=presence)
+                                    presencedata.save()
 
                 messages.info(request, f"{command} success")
             except Exception as ex:

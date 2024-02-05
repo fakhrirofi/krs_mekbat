@@ -86,7 +86,7 @@ class PresenceData(models.Model):
     datetime = models.DateTimeField("attendance time", blank=True, null=True)
 
     def __str__(self):
-        return self.presence.event.name + " | " + self.presence.name + " | " + str(self.user.userdata.nim)
+        return self.presence.event.name + " | " + self.presence.name + " | " + str(self.user.username)
 
 
 def attend(presence_id: int, user_id: int):
