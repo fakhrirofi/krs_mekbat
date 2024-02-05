@@ -64,8 +64,10 @@
     </div> <!-- form-group// -->                                             
 </form>
 </article> <!-- card-body end .// -->
-{% if register_on is True %}
-    <div class="border-top card-body text-center">Belum punya akun? <a href="{% url 'war:register' %}">Sign Up</a></div>
+{% if register_on %}
+    {% if register_on.active %}
+        <div class="border-top card-body text-center">Belum punya akun? <a href="{% url 'war:register' %}">Sign Up</a></div>
+    {% endif %}
 {% endif %}
 {# <div class="border-top card-body text-center"><a href="#">Lupa Password?</a></div> #}
 </div> <!-- card.// -->

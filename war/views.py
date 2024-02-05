@@ -4,7 +4,7 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from .models import Session, Schedule, AdminControl
+from .models import Session, Schedule, AdminControl, Event, Presence, PresenceData
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 class CustomLoginView(LoginView):
     template_name = 'war/login.html'
     redirect_authenticated_user = True
-    extra_context = {"register_on" : AdminControl.objects.get(name="register").active}
+    extra_context = {"register_on" : AdminControl.objects.filter(name="register").first()}
 
 @login_required
 def home(request):
@@ -74,12 +74,11 @@ def admin_control(request):
         return redirect(reverse("war:home"))
     if request.method == "POST":
         commands = request.POST.getlist('command')
-        session = request.POST.getlist('session')
-        print(commands)
+        selection = request.POST.getlist('selection')
         for command in commands:
             try:
                 if command == "regenerate_schedule":
-                    for ses in session:
+                    for ses in selection:
                         _ses = Session.objects.get(name=ses)
                         for sch in _ses.schedule_set.all():
                             sch.delete()
@@ -95,18 +94,34 @@ def admin_control(request):
                                     sch = Schedule(session=_ses, name=f"{day} {time}")
                                     sch.group_number = group_number
                                     sch.save()
-                if command == "empty_schedule":
-                    for ses in session:
+                
+                elif command == "empty_schedule":
+                    for ses in selection:
                         _ses = Session.objects.get(name=ses)
                         for sch in _ses.schedule_set.all():
                             sch.userdata_set.clear()
                             sch.available = sch.max_enrolled - sch.userdata_set.count()
                             sch.save()
+                
+                elif command == "generate_presence":
+                    for eve in selection:
+                        event = Event.objects.get(name=eve)
+                        _temp_sch_name = None
+                        for sch in event.session.schedule_set.all():
+                            if sch.name != _temp_sch_name:
+                                presence = Presence(name=sch.name, event=event)
+                                presence.save()
+                                _temp_sch_name = sch.name
+                            for userdata in sch.userdata_set.all():
+                                presencedata = PresenceData(user=userdata.user, presence=presence)
+                                presencedata.save()
+
                 messages.info(request, f"{command} success")
             except Exception as ex:
                 messages.info(request, ex)
 
     return render(request, 'war/admin_control.html', {
         "controller" : AdminControl.objects.all(),
-        "session" : Session.objects.all()
+        "session" : Session.objects.all(),
+        "event"   : Event.objects.all()
     })
