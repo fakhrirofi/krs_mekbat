@@ -8,6 +8,8 @@ from .models import Session, Schedule, AdminControl
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse
+from .user_qr_code import encrypt, decrypt, get_event_ticket
+import base64
 
 import logging
 # Get an instance of a logger
@@ -55,6 +57,16 @@ def krs_war(request, slug):
     if (not session.active) or (timezone.now() < session.open_time) :
         return redirect(reverse("war:home"))
     return render(request, 'war/krs_war.html')
+
+@login_required
+def show_qr(request):
+    enc = encrypt(str(request.user.pk))
+    print(enc)
+    qr_code = get_event_ticket(enc, request.user.userdata)
+    return render(request, 'war/show_qr.html', {
+        'qr_code' : base64.b64encode(qr_code).decode(),
+        'filename' : str(request.user.userdata.nim) + "_" + request.user.userdata.name
+    })
 
 @login_required
 def admin_control(request):

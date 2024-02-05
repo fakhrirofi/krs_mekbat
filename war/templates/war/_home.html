@@ -25,7 +25,8 @@
 <div class="card">
 <header class="card-header">
 	<a href="{% url 'war:logout' %}" class="float-right btn btn-outline-primary mt-1">Log out</a>
-  <a href="{% url 'war:logout' %}" class="float-right btn btn-outline-primary mt-1 mr-3">QR Code</a>
+  {% block header_tab %}
+  {% endblock header_tab %}
 	<h6 class="card-title mt-2">{{ user.username }} | {{ user.userdata.name }}</h6>
 </header>
 <article class="card-body">

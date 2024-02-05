@@ -11,5 +11,6 @@ urlpatterns = [
     path('logout/', views.logout_user, name='logout'),
     path('krs_war/<slug>', views.krs_war, name='krs_war'),
     path('admin_control/', views.admin_control, name='admin_control'),
+    path('show_qr/', views.show_qr, name="show_qr"),
     path('api/krs_war/<slug>', api.krs_war, name='api_krs_war'),
 ]

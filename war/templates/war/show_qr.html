@@ -1,0 +1,32 @@
+{% extends "war/base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block head %}
+    <title>Mekanika Batuan 2024 | Your QR Code</title>
+{% endblock head %}
+
+{% block content %}
+<div class="container mb-5 mt-5 pl-5 pr-5">
+  <h4 class="">This is Your QR Code!</h3>
+  <hr>
+  <p style="font-size: small;">
+  Download QR code di bawah ini dan bawa ketika menghadiri praktikum Mekanika Batuan.
+  Kamu dapat mengunjungi ulang halaman ini jika QR code hilang.
+  </p>
+  <div class="d-flex justify-content-center">
+  <a style="font-size: large;" download="{{ filename }}" href="data:image/jpeg;base64,{{ qr_code }}">Download QR Code</a>
+  </div>
+  <div class="d-flex justify-content-center">
+  <img style="max-width: 75%;" id="ItemPreview" src="">
+  </div>
+  <script>
+  document.getElementById("ItemPreview").src = "data:image/jpeg;base64," + "{{ qr_code }}";
+  </script>
+  <!-- 
+   -->
+  <div class="d-flex justify-content-center">
+  <a href="{% url 'war:home' %}">Home</a>
+  </div>
+</div>
+{% endblock content %}

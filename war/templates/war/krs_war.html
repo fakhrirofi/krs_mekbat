@@ -5,6 +5,10 @@
     <title>Jadwal - Mekanika Batuan 2023/2024</title>
 {% endblock head %}
 
+{% block header_tab %}
+    <a href="{% url 'war:home' %}" class="float-right btn btn-outline-primary mt-1 mr-3">Home</a>
+{% endblock header_tab %}
+
 {% block content %}
 
     <div id="infoSelected" class="alert alert-success"></div>

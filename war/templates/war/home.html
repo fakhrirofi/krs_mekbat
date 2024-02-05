@@ -5,8 +5,11 @@
     <title>Home - Mekanika Batuan 2023/2024</title>
 {% endblock head %}
 
-{% block content %}
+{% block header_tab %}
+    <a href="{% url 'war:show_qr' %}" class="float-right btn btn-outline-primary mt-1 mr-3">QR Code</a>
+{% endblock header_tab %}
 
+{% block content %}
     {% if session %}
         {% for ses in session %}
             <p><center><a href="{% url 'war:krs_war' ses.slug%}">{{ ses.name }}</a></center></p>
