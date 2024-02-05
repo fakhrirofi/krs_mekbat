@@ -64,7 +64,9 @@
     </div> <!-- form-group// -->                                             
 </form>
 </article> <!-- card-body end .// -->
-<div class="border-top card-body text-center">Belum punya akun? <a href="{% url 'war:register' %}">Sign Up</a></div>
+{% if register_on is True %}
+    <div class="border-top card-body text-center">Belum punya akun? <a href="{% url 'war:register' %}">Sign Up</a></div>
+{% endif %}
 {# <div class="border-top card-body text-center"><a href="#">Lupa Password?</a></div> #}
 </div> <!-- card.// -->
 </div> <!-- col.//-->

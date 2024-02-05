@@ -184,4 +184,4 @@ LOGGING = {
     },
 }
 
-LOGIN_REDIRECT_URL = "/krs/home/"
+LOGIN_REDIRECT_URL = "/accounts/home/"

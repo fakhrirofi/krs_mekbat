@@ -14,8 +14,9 @@ import logging
 logger = logging.getLogger(__name__)
 
 class CustomLoginView(LoginView):
-	template_name = 'war/login.html'
-	redirect_authenticated_user = True
+    template_name = 'war/login.html'
+    redirect_authenticated_user = True
+    extra_context = {"register_on" : AdminControl.objects.get(name="register").active}
 
 @login_required
 def home(request):
@@ -70,6 +71,7 @@ def admin_control(request):
                         _ses = Session.objects.get(name=ses)
                         for sch in _ses.schedule_set.all():
                             sch.delete()
+                        group_number = 0
                         for day in ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"]:
                             if day == "Jumat":
                                 times = ["7.00 - 9.00", "13.00 - 15.00", "15.30 - 17.30"]
@@ -77,7 +79,9 @@ def admin_control(request):
                                 times = ["7.00 - 9.00", "10.00 - 12.00", "13.00 - 15.00"]
                             for time in times:
                                 for _ in range(2):
+                                    group_number += 1
                                     sch = Schedule(session=_ses, name=f"{day} {time}")
+                                    sch.group_number = group_number
                                     sch.save()
                 if command == "empty_schedule":
                     for ses in session:

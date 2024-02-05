@@ -1,7 +1,7 @@
 var path = location.pathname;
 var directories = path.split("/");
 var lastDirecotry = directories[(directories.length - 1)];
-let URL = '/krs/api/krs_war/' + lastDirecotry;
+let URL = '/accounts/api/krs_war/' + lastDirecotry;
 
 // POST SECTION
 function getCookie(name) {

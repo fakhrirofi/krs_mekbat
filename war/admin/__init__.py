@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .actions import export_as_xls
-from ..models import Session, Schedule, UserData
+from ..models import Session, Schedule, UserData, AdminControl
 
 class ModelAdmin(admin.ModelAdmin):
     actions = [export_as_xls]
@@ -64,3 +64,8 @@ class UserDataAdmin(ModelAdmin):
             return "-"
 
 admin.site.register(UserData, UserDataAdmin)
+
+class AdminControlAdmin(admin.ModelAdmin):
+    list_display = ['name', 'active']
+
+admin.site.register(AdminControl, AdminControlAdmin)

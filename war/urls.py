@@ -12,5 +12,4 @@ urlpatterns = [
     path('krs_war/<slug>', views.krs_war, name='krs_war'),
     path('admin_control/', views.admin_control, name='admin_control'),
     path('api/krs_war/<slug>', api.krs_war, name='api_krs_war'),
-    path('accounts/login/', views.CustomLoginView.as_view(), name="login_redirect")
 ]
