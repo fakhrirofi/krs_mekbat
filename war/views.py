@@ -65,7 +65,7 @@ def krs_war(request, slug):
     session = get_object_or_404(Session, slug=slug)
     if (not session.active) or (timezone.now() < session.open_time) :
         return redirect(reverse("war:home"))
-    return render(request, 'war/krs_war.html')
+    return render(request, 'war/krs_war.html', {'session': session})
 
 @login_required
 def show_qr(request):

@@ -5,6 +5,10 @@
     <title>Jadwal - Mekanika Batuan 2023/2024</title>
 {% endblock head %}
 
+<script>
+    var krsApiUrl = "{% url 'war:api_krs_war' session.slug %}";
+</script>
+
 {% block header_tab %}
     <a href="{% url 'war:home' %}" class="float-right btn btn-outline-primary mt-1 mr-3">Home</a>
 {% endblock header_tab %}
