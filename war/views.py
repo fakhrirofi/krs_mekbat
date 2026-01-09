@@ -37,7 +37,7 @@ def home(request):
 @login_required
 def logout_user(request):
     logout(request)
-    return redirect(reverse("blog:index"))
+    return redirect(reverse("war:login"))
 
 def index(request):
     return redirect(reverse("war:login"))
