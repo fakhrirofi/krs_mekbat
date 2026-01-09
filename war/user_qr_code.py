@@ -96,9 +96,12 @@ def get_event_ticket(enc: str, userdata: UserData) -> bytes:
     write_text(draw, (w, h), "UPN \"Veteran\" Yogyakarta", (0, 160), size=11, align="center", bold=True)
     write_text(draw, (w, h), userdata.name, (0, 995), size=10, align="center", bold=True)
     write_text(draw, (w, h), str(userdata.nim), (0, 1045), size=10, align="center", bold=True)
-    if userdata.schedule:
-        write_text(draw, (w, h), f'Kelompok {str(userdata.schedule.group_number)}', (60, 1145), size=8, align="left", bold=False)
-        write_text(draw, (w, h), userdata.schedule.name, (60, 1190), size=8, align="left", bold=False)
+    schedules = userdata.schedules.all()
+    if schedules.exists():
+        groups = ", ".join([str(s.group_number) for s in schedules])
+        names = ", ".join([s.name for s in schedules])
+        write_text(draw, (w, h), f'Kelompok {groups}', (60, 1145), size=8, align="left", bold=False)
+        write_text(draw, (w, h), names, (60, 1190), size=8, align="left", bold=False)
     write_text(draw, (w, h), f'#{str(userdata.pk).zfill(4)}', (0, 1175), size=8, align="right", align_right=988, bold=False)
 
     # paste qr code

@@ -1,0 +1,50 @@
+{% extends "war/_home.html" %}
+{% block head %}
+<title>Lihat Jadwal Terisi</title>
+{% endblock head %}
+
+{% block header_tab %}
+<a href="{% url 'war:home' %}" class="float-right btn btn-primary mt-1 mr-3">Home</a>
+{% endblock header_tab %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <h3 class="text-center mb-4">Jadwal Terisi</h3>
+
+        {% for session in sessions %}
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white">
+                {{ session.name }}
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for sch in session.schedule_set.all %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <strong>{{ sch.name }}</strong>
+                            </div>
+                            <ul class="list-group list-group-flush" style="max-height: 200px; overflow-y: auto;">
+                                {% for userdata in sch.users_enrolled.all %}
+                                <li class="list-group-item py-1">
+                                    <small>{{ userdata.name }} ({{ userdata.nim }})</small>
+                                </li>
+                                {% empty %}
+                                <li class="list-group-item text-muted"><small>Belum ada mahasiswa</small></li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-center">
+            <!-- Removed bottom button as requested -->
+        </div>
+    </div>
+</div>
+{% endblock content %}

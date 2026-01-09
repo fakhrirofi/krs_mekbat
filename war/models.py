@@ -17,32 +17,41 @@ class Session(models.Model):
 
 class Schedule(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    group_number = models.IntegerField("Kelompok")
     name = models.CharField(max_length=50)
-    max_enrolled = models.IntegerField(default=7)
-    available = models.IntegerField(default=7)
+    available = models.IntegerField(default=0)
+    max_enrolled = models.IntegerField(default=30)
+    group_number = models.IntegerField(default=1)
 
     def __str__(self):
         return self.name
 
     def add_person(self, userdata, changed):
-        if self.userdata_set.count() >= self.max_enrolled:
+        if self.users_enrolled.count() >= self.max_enrolled:
             logger.warning(f"{userdata.name} Schedule Count >= max_enrolled. target={self.name}")
             return "limit"
         if changed:
-            sch = userdata.schedule
-            sch.available += 1
-            sch.save()
-            logger.warning(f"{userdata.name} Changed. from={sch.name} target={self.name}")
-        userdata.schedule = self
+            # Find and remove old schedule for this session
+            sch = userdata.get_schedule_for_session(self.session)
+            if sch:
+                sch.available += 1
+                sch.save()
+                userdata.schedules.remove(sch)
+                logger.warning(f"{userdata.name} Changed. from={sch.name} target={self.name}")
+        
+        userdata.schedules.add(self)
         userdata.save()
-        self.available = self.max_enrolled - self.userdata_set.count()
+        self.available = self.max_enrolled - self.users_enrolled.count()
         self.save()
         return "success"
 
 class UserData(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    schedule = models.ForeignKey(Schedule, on_delete=models.SET_NULL, null=True, blank=True)
+    schedules = models.ManyToManyField(Schedule, blank=True, related_name='users_enrolled')
+    # FUTURE SCHEDULE UPDATE: MANY TO MANY
+
+    def get_schedule_for_session(self, session):
+        return self.schedules.filter(session=session).first()
+
     # FUTURE SCHEDULE UPDATE: MANY TO MANY
     nim = models.IntegerField()
     name = models.CharField(max_length=50)

@@ -1,64 +1,637 @@
 {% extends "war/_home.html" %}
 {% load static %}
-
-{% block head %}
-    <title>Admin Control</title>
-{% endblock head %}
-
+{% block head %}<title>Admin Control</title>{% endblock head %}
 {% block content %}
-    {% if messages %}
-        <div class="alert alert-success">
-            {% for message in messages %}
-                {{ message }}
-            {% endfor %}
+
+{% if messages %}
+<div class="alert alert-success">
+    {% for message in messages %}
+    {{ message }}
+    {% endfor %}
+</div>
+{% endif %}
+
+<form method="post" action="{% url 'war:admin_control' %}" novalidate>
+    {% csrf_token %}
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Session Management</h5>
         </div>
-    {% endif %}
-
-    <form method="post" action="{% url 'war:admin_control' %}" novalidate>
-        {% csrf_token %}
-
-        <h6 align="center">Session Control</h6>
-        <table align="center">
-            {% for ses in session %}
-            <tr>
-            <td>{{ ses.name }}</td>
-            <td><input type="checkbox" name="selection" value="{{ses.name}}"></td>
-            </tr>
-            {% endfor %}
+        <div class="card-body p-0">
+            <table class="table table-bordered table-hover mb-0 text-center align-middle">
+                <thead class="thead-light">
+                    <tr>
+                        <th style="width: 20%;">Name</th>
+                        <th style="width: 10%;">Status</th>
+                        <th style="width: 35%;">Open Time</th>
+                        <th style="width: 35%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ses in session %}
+                    <tr>
+                        <td class="align-middle font-weight-bold">{{ ses.name }}</td>
+                        <td class="align-middle">
+                            <button type="submit" name="command" value="toggle_session:{{ses.slug}}"
+                                class="btn btn-sm {% if ses.active %}btn-success{% else %}btn-secondary{% endif %}">
+                                {% if ses.active %}Active{% else %}Inactive{% endif %}
+                            </button>
+                        </td>
+                        <td class="align-middle">
+                            <div class="input-group input-group-sm">
+                                <input type="hidden" name="dummy_id" value="{{ses.id}}">
+                                <input type="datetime-local" name="update_time_{{ses.id}}" class="form-control"
+                                    value="{{ ses.open_time|date:'Y-m-d\TH:i' }}">
+                                <div class="input-group-append"><button type="submit" name="command"
+                                        value="update_session:{{ses.id}}" class="btn btn-info">Update</button></div>
+                            </div>
+                        </td>
+                        <td class="align-middle">
+                            <button type="submit" name="command" value="empty_schedule:{{ses.id}}"
+                                class="btn btn-warning btn-sm mr-1"
+                                onclick="return confirm('Are you sure you want to empty schedule for {{ses.name}}?')"><i
+                                    class="fa fa-eraser"></i> Empty</button>
+                            <button type="submit" name="command" value="delete_session:{{ses.id}}"
+                                class="btn btn-danger btn-sm mr-1"
+                                onclick="return confirm('Are you sure you want to DELETE {{ses.name}}?')"><i
+                                    class="fa fa-trash"></i> Delete</button>
+                            <button type="submit" name="command" value="download_session_data:{{ses.id}}"
+                                class="btn btn-success btn-sm" title="Download Student Data (XLSX)"><i
+                                    class="fa fa-download"></i> XLSX</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
             </table>
-        <button type="submit" name="command" value="regenerate_schedule" class="btn btn-primary btn-block"> Regenerate Schedule </button>
-        <button type="submit" name="command" value="empty_schedule" class="btn btn-primary btn-block"> Empty Schedule </button>
-        
-        <hr>
+        </div>
+    </div>
 
-        <h6 align="center">Presence Control</h6>
-        <table align="center">
-            {% for ses in event %}
-            <tr>
-            <td>{{ ses.name }}</td>
-            <td><input type="checkbox" name="selection" value="{{ses.name}}"></td>
-            </tr>
-            {% endfor %}
-            </table>
-        <button type="submit" name="command" value="generate_presence" class="btn btn-primary btn-block"> Generate Presence </button>
-        {# <button type="submit" name="command" value="empty_schedule" class="btn btn-primary btn-block"> Empty Schedule </button> #}
+    <ul class="nav nav-tabs mb-4" id="adminTabs" role="tablist">
+        <li class="nav-item"><a class="nav-link active" id="session-tab" data-toggle="tab" href="#session" role="tab"
+                aria-controls="session" aria-selected="true">Session Management</a></li>
+        <li class="nav-item"><a class="nav-link" id="session-data-tab" data-toggle="tab" href="#session-data" role="tab"
+                aria-controls="session-data" aria-selected="false">Session Data (Drag & Drop)</a></li>
+        <li class="nav-item"><a class="nav-link" id="data-tab" data-toggle="tab" href="#data" role="tab"
+                aria-controls="data" aria-selected="false">All Student Data</a></li>
+    </ul>
 
-            <!---
-            <h6 align="center">Web Properties</h6>
-            <table align="center">
-            {% for control in controller %}
-            <tr>
-            <td>{{ control.name }}</td>
-            {% if control.active == True %}
-                <td><input onChange="this.form.submit()" type="checkbox" name="command_control" value="{{control.name}}" checked></td>
-            {% else %}
-                <td><input onChange="this.form.submit()" type="checkbox" name="command_control" value="{{control.name}}"></td>
-            {% endif %}
-            </tr>
-            {% endfor %}
-            </table>
-            --->
+    <div class="tab-content" id="adminTabsContent">
+        <div class="tab-pane fade show active" id="session" role="tabpanel" aria-labelledby="session-tab">
+            <div class="row">
+                <div class="col-md-5">
+                    <div class="card mb-3">
+                        <div class="card-header bg-success text-white">Create New Session</div>
+                        <div class="card-body">
+                            <div class="form-group mb-0">
+                                <label>Session Name</label>
+                                <input type="text" name="session_name" class="form-control mb-2"
+                                    placeholder="e.g. Sesi 1 (Slug auto-generated)">
+                                <label>Open Time</label>
+                                <input type="datetime-local" name="session_open_time" class="form-control mb-3">
+                                <button type="submit" name="command" value="create_session"
+                                    class="btn btn-success btn-block"> Create Session </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Web Properties & Presence</div>
+                        <div class="card-body p-0">
+                            <table class="table table-sm text-center mb-0">
+                                {% for control in controller %}
+                                <tr>
+                                    <td class="align-middle">{{ control.name }}</td>
+                                    <td>
+                                        <button type="submit" name="command" value="toggle_control:{{control.name}}"
+                                            class="btn btn-sm {% if control.active %}btn-success{% else %}btn-secondary{% endif %} btn-block">
+                                            {% if control.active %}Active{% else %}Inactive{% endif %}
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </table>
+                            <hr class="m-0">
+                            <!-- <div class="p-2">
+                                <small>Check Event to Generate Presence:</small>
+                                <div class="d-flex flex-wrap mt-1">
+                                    {% for ses in event %}
+                                    <div class="custom-control custom-checkbox mr-3">
+                                        <input type="checkbox" class="custom-control-input" id="check_event_{{ses.id}}"
+                                            name="selection" value="{{ses.name}}">
+                                        <label class="custom-control-label"
+                                            for="check_event_{{ses.id}}">{{ses.name}}</label>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <button type="submit" name="command" value="generate_presence"
+                                    class="btn btn-primary btn-block btn-sm mt-2"> Generate Presence </button>
+                            </div> -->
+                        </div>
+                    </div>
+                </div>
 
-    </form>
+                <div class="col-md-7">
+                    <div class="card h-100">
+                        <div class="card-header bg-primary text-white">Schedule Generator</div>
+                        <div class="card-body">
+                            <div class="form-group">
+                                <label>Target Session:</label>
+                                <select class="form-control" id="target_session_select" name="target_session_slug">
+                                    {% for ses in session %}
+                                    <option value="{{ses.slug}}">{{ses.name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Default Max Quota (Per Schedule)</label>
+                                <input type="number" id="default_quota" class="form-control" value="30" min="1">
+                            </div>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <h6>Select Days</h6>
+                                    <div class="d-flex flex-column">
+                                        <label><input type="checkbox" class="day-check" value="Senin"> Senin</label>
+                                        <label><input type="checkbox" class="day-check" value="Selasa"> Selasa</label>
+                                        <label><input type="checkbox" class="day-check" value="Rabu"> Rabu</label>
+                                        <label><input type="checkbox" class="day-check" value="Kamis"> Kamis</label>
+                                        <label><input type="checkbox" class="day-check" value="Jumat"> Jumat</label>
+                                        <label><input type="checkbox" class="day-check" value="Sabtu"> Sabtu</label>
+                                        <label><input type="checkbox" class="day-check" value="Minggu"> Minggu</label>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <h6>Input Times</h6>
+                                    <div id="time-inputs-container">
+                                        <input type="text" class="form-control form-control-sm mb-2 time-input"
+                                            placeholder="07.00 - 09.00">
+                                        <input type="text" class="form-control form-control-sm mb-2 time-input"
+                                            placeholder="10.00 - 12.00">
+                                    </div>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="addTimeInput()">+
+                                        Add Time</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-info btn-block mt-3"
+                                onclick="generatePreview()">Generate Preview</button>
+                            <div id="preview-section" class="mt-4" style="display:none;">
+                                <h6 class="border-bottom pb-2">Schedule Preview (Editable)</h6>
+                                <table class="table table-sm table-borderless">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 25%">Day</th>
+                                            <th style="width: 50%">Time</th>
+                                            <th style="width: 20%">Quota</th>
+                                            <th style="width: 5%"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="schedule-list"></tbody>
+                                </table>
+                                <div class="alert alert-warning py-1"><small>Warning: Clicking Accept will replace all
+                                        existing schedules for the selected session.</small></div>
+                                <button type="submit" name="command" value="accept_schedule"
+                                    class="btn btn-primary btn-block">Accept & Save Schedule</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-{% endblock content %}
+        <div class="tab-pane fade" id="session-data" role="tabpanel" aria-labelledby="session-data-tab">
+            <div class="card mb-3">
+                <div class="card-header bg-indigo text-white d-flex justify-content-between align-items-center"
+                    style="background-color: #6610f2;">
+                    <span>Interactive Session Data</span>
+                    <select class="form-control form-control-sm w-25" id="session_select_data">
+                        <option value="">-- Select Session --</option>
+                        {% for ses in session %}
+                        <option value="{{ses.id}}">{{ses.name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="card-body bg-light" id="session-data-container">
+                    <div class="text-center text-muted mt-5">Please select a session to view data.</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="data" role="tabpanel" aria-labelledby="data-tab">
+            <div class="card">
+                <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <span>Student Data Management</span>
+                    <input type="text" id="studentSearch" class="form-control form-control-sm w-25"
+                        placeholder="Search Name/NIM...">
+                </div>
+                <div class="card-body p-0">
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-bordered table-hover mb-0 text-center table-sm">
+                            <thead class="thead-light sticky-top">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>NIM</th>
+                                    <th>Schedule</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentTableBody">
+                                {% for user in users %}
+                                <tr>
+                                    <td class="align-middle text-left pl-3">{{ user.name }}</td>
+                                    <td class="align-middle">{{ user.nim }}</td>
+                                    <td class="align-middle" id="schedule-cell-{{user.id}}">
+                                        {% for sch in user.schedules.all %}
+                                        <div class="mb-1">
+                                            <span class="badge badge-info" style="font-size: 0.9em;">
+                                                {{ sch.session.name }} | {{ sch.name }}
+                                            </span>
+                                            <button type="submit" name="command"
+                                                value="admin_remove_schedule:{{user.id}}:{{sch.id}}"
+                                                class="btn btn-xs btn-outline-danger ml-1 py-0 px-1"
+                                                title="Remove Schedule">
+                                                <i class="fa fa-times"></i>
+                                            </button>
+                                        </div>
+                                        {% empty %}
+                                        <span class="badge badge-secondary">Not Selected</span>
+                                        {% endfor %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <button type="button" class="btn btn-warning btn-sm" data-toggle="modal"
+                                            data-target="#passwordModal{{user.id}}" title="Change Password"><i
+                                                class="fa fa-key"></i></button>
+                                        <button type="button" class="btn btn-primary btn-sm" data-toggle="modal"
+                                            data-target="#scheduleModal{{user.id}}" title="Change Schedule"><i
+                                                class="fa fa-calendar"></i></button>
+
+                                        <div class="modal fade" id="passwordModal{{user.id}}" tabindex="-1"
+                                            role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Change Password: {{user.name}}</h5>
+                                                        <button type="button" class="close"
+                                                            data-dismiss="modal"><span>&times;</span></button>
+                                                    </div>
+                                                    <div class="modal-body text-left">
+                                                        <input type="hidden" name="target_user_id"
+                                                            value="{{user.user.id}}">
+                                                        <div class="form-group"><label>New Password</label><input
+                                                                type="text" name="new_password_{{user.user.id}}"
+                                                                class="form-control"></div>
+                                                        <button type="submit" name="command"
+                                                            value="admin_reset_password:{{user.user.id}}"
+                                                            class="btn btn-warning btn-block">Reset Password</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="modal fade" id="scheduleModal{{user.id}}" tabindex="-1"
+                                            role="dialog" aria-hidden="true">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Manage Schedule: {{user.name}}</h5>
+                                                        <button type="button" class="close"
+                                                            data-dismiss="modal"><span>&times;</span></button>
+                                                    </div>
+                                                    <div class="modal-body text-left">
+                                                        <div class="mb-3">
+                                                            <label class="font-weight-bold">Current Enrollments:</label>
+                                                            <div class="p-2 border rounded bg-light">
+                                                                {% for sch in user.schedules.all %}
+                                                                <div class="mb-1">
+                                                                    <span>{{ sch.session.name }} | <strong>{{ sch.name
+                                                                            }}</strong></span>
+                                                                </div>
+                                                                {% empty %}
+                                                                <small class="text-muted">No active enrollments.</small>
+                                                                {% endfor %}
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label>Assign/Switch to Schedule</label>
+                                                            <input type="hidden" name="target_userdata_id_{{user.id}}"
+                                                                value="{{user.id}}">
+                                                            <select name="new_schedule_id_{{user.id}}"
+                                                                class="form-control">
+                                                                <option value="none" selected>-- Select Schedule to
+                                                                    Assign --</option>
+
+                                                                {% for ses in session %}
+                                                                <optgroup label="{{ses.name}}">
+                                                                    {% for sch in ses.schedule_set.all %}
+                                                                    <option value="{{sch.id}}">{{sch.name}}
+                                                                        ({{sch.users_enrolled.count}}/{{sch.max_enrolled}})
+                                                                    </option>
+                                                                    {% endfor %}
+                                                                </optgroup>
+                                                                {% endfor %}
+                                                            </select>
+                                                            <small class="form-text text-muted">Selecting a schedule
+                                                                will remove the user from any other schedule in the same
+                                                                session.</small>
+                                                        </div>
+                                                        <button type="submit" name="command"
+                                                            value="admin_change_schedule:{{user.id}}"
+                                                            class="btn btn-primary btn-block">Update Assignment</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $("#studentSearch").on("keyup", function () {
+                var value = $(this).val().toLowerCase();
+                $("#studentTableBody tr").filter(function () {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                });
+            });
+        });
+        function addTimeInput() {
+            var input = '<input type="text" class="form-control form-control-sm mb-2 time-input" placeholder="HH.MM - HH.MM">';
+            $("#time-inputs-container").append(input);
+        }
+        function generatePreview() {
+            var days = [];
+            $(".day-check:checked").each(function () { days.push($(this).val()); });
+            var times = [];
+            $(".time-input").each(function () { var val = $(this).val().trim(); if (val) times.push(val); });
+            var defaultQuota = $("#default_quota").val() || 30;
+            if (days.length === 0 || times.length === 0) { alert("Please select at least one day and one time."); return; }
+            var container = $("#schedule-list");
+            container.empty();
+            var dayOrder = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"];
+            var sortedDays = dayOrder.filter(d => days.includes(d));
+            sortedDays.forEach(function (day) {
+                times.forEach(function (time) {
+                    var item = `<tr><td><input type="text" name="days" class="form-control form-control-sm" value="${day}" readonly></td>
+                            <td><input type="text" name="final_times" class="form-control form-control-sm" value="${time}"></td>
+                            <td><input type="number" name="quotas" class="form-control form-control-sm" value="${defaultQuota}"></td>
+                            <td><button class="btn btn-outline-danger btn-sm" type="button" onclick="$(this).closest('tr').remove()">X</button></td></tr>`;
+                    container.append(item);
+                });
+            });
+            $("#preview-section").show();
+        }
+
+        // AJAX Password Reset
+        $(document).on('click', 'button[value^="admin_reset_password:"]', function (e) {
+            e.preventDefault();
+            var btn = $(this);
+            var command = btn.val();
+            var userId = command.split(':')[1];
+            var newPassInput = $("input[name='new_password_" + userId + "']");
+            var newPass = newPassInput.val();
+
+            if (!newPass) { alert("Password cannot be empty"); return; }
+
+            var data = {
+                'command': command,
+                'csrfmiddlewaretoken': $("input[name='csrfmiddlewaretoken']").val(),
+            };
+            data['new_password_' + userId] = newPass;
+
+            $.ajax({
+                type: "POST",
+                url: "{% url 'war:admin_control' %}",
+                data: data,
+                success: function (response) {
+                    if (response.status === 'success') {
+                        alert(response.message);
+                        $('#passwordModal' + userId).modal('hide');
+                        newPassInput.val('');
+                    } else {
+                        alert("Error: " + (response.message || "Unknown error"));
+                    }
+                },
+                error: function (xhr, errmsg, err) {
+                    // Fallback if not JSON or other error
+                    console.log(xhr.status + ": " + xhr.responseText);
+                    alert("Error: Failed to reset password. Check console.");
+                }
+            });
+        });
+
+        // AJAX Handler for Remove Schedule
+        $(document).on('click', 'button[value^="admin_remove_schedule:"]', function (e) {
+            e.preventDefault();
+            if (!confirm('Are you sure you want to remove this schedule?')) return;
+
+            var btn = $(this);
+            var command = btn.val();
+
+            $.post("{% url 'war:admin_control' %}", {
+                'command': command,
+                'csrfmiddlewaretoken': $("input[name='csrfmiddlewaretoken']").val()
+            }, function (response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    // Remove the schedule badge div from UI
+                    btn.closest('div').remove();
+                } else {
+                    alert("Error: " + response.message);
+                }
+            }).fail(function () { alert("Request failed."); });
+        });
+
+        // AJAX Handler for Change Schedule (in Modal)
+        $(document).on('click', 'button[value^="admin_change_schedule:"]', function (e) {
+            e.preventDefault();
+            var btn = $(this);
+            var command = btn.val();
+            var userId = command.split(':')[1];
+
+            var newSchId = $("select[name='new_schedule_id_" + userId + "']").val();
+
+            $.post("{% url 'war:admin_control' %}", {
+                'command': command,
+                ['new_schedule_id_' + userId]: newSchId,
+                'csrfmiddlewaretoken': $("input[name='csrfmiddlewaretoken']").val()
+            }, function (response) {
+                if (response.status === 'success') {
+                    alert(response.message);
+                    $('#scheduleModal' + userId).modal('hide');
+
+                    // Update table cell
+                    if (response.current_schedules) {
+                        var cell = $('#schedule-cell-' + userId);
+                        cell.empty();
+                        if (response.current_schedules.length > 0) {
+                            response.current_schedules.forEach(function (sch) {
+                                var badgeHtml = `
+                                <div class="mb-1">
+                                    <span class="badge badge-info" style="font-size: 0.9em;">
+                                        ${sch.session_name} | ${sch.name}
+                                    </span>
+                                    <button type="submit" name="command"
+                                        value="admin_remove_schedule:${userId}:${sch.id}"
+                                        class="btn btn-xs btn-outline-danger ml-1 py-0 px-1"
+                                        title="Remove Schedule">
+                                        <i class="fa fa-times"></i>
+                                    </button>
+                                </div>`;
+                                cell.append(badgeHtml);
+                            });
+                        } else {
+                            cell.html('<span class="badge badge-secondary">Not Selected</span>');
+                        }
+                    }
+
+                    // Update Modal Enrollments Section (if we want to be thorough)
+                    // We can re-use the current_schedules to update the modal list too!
+                    var modalList = $('#scheduleModal' + userId + ' .p-2');
+                    if (modalList.length && response.current_schedules) {
+                        modalList.empty();
+                        if (response.current_schedules.length > 0) {
+                            response.current_schedules.forEach(function (sch) {
+                                modalList.append(`
+                                <div class="mb-1">
+                                    <span>${sch.session_name} | <strong>${sch.name}</strong></span>
+                                </div>`);
+                            });
+                        } else {
+                            modalList.html('<small class="text-muted">No active enrollments.</small>');
+                        }
+                    }
+
+                } else {
+                    alert("Error: " + response.message);
+                }
+            }).fail(function (xhr) { alert("Request failed."); });
+        });
+    </script>
+    <script>
+        // Session Data Tab Logic
+        $(document).ready(function () {
+            $('#session_select_data').change(function () {
+                var pid = $(this).val();
+                console.log("Selected Session ID: " + pid);
+                loadSessionData(pid);
+            });
+        });
+
+        // Add CSS for cards dynamically or better in style block, but here works too
+        $("<style>")
+            .prop("type", "text/css")
+            .html(".session-card { width: 31%; white-space: normal; } @media (max-width: 1000px) { .session-card { width: 48%; } } @media (max-width: 600px) { .session-card { width: 100%; } }")
+            .appendTo("head");
+
+        function loadSessionData(sessionId) {
+            if (!sessionId) return;
+            $("#session-data-container").html('<div class="text-center mt-5"><i class="fa fa-spinner fa-spin fa-3x"></i></div>');
+
+            $.post("{% url 'war:admin_control' %}", {
+                command: 'get_session_data',
+                session_id: sessionId,
+                csrfmiddlewaretoken: $("input[name='csrfmiddlewaretoken']").val()
+            }, function (resp) {
+                console.log("Server Response:", resp);
+                if (resp.status === 'success') {
+                    renderSessionData(resp.schedules);
+                } else {
+                    alert(resp.message);
+                    $("#session-data-container").html('<div class="text-center text-danger mt-5">Error: ' + resp.message + '</div>');
+                }
+            }).fail(function (xhr, status, error) {
+                console.error("AJAX Error:", status, error);
+                console.log(xhr.responseText);
+                $("#session-data-container").html('<div class="text-center text-danger mt-5">Connection Failed (Check Console)</div>');
+            });
+        }
+
+        function renderSessionData(schedules) {
+            var container = $("#session-data-container");
+            container.empty();
+
+            schedules.forEach(function (sch) {
+                var cardHtml = `
+                <div class="card d-inline-block align-top mr-3 mb-3 shadow-sm session-card" 
+                     ondrop="drop(event, ${sch.id})" ondragover="allowDrop(event)">
+                    <div class="card-header py-2">
+                        <input type="text" class="form-control form-control-sm font-weight-bold mb-1" 
+                               value="${sch.name}" onchange="updateMeta(${sch.id}, 'name', this.value)">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge badge-primary">Group ${sch.group}</span>
+                            <div class="input-group input-group-sm" style="width: 100px;">
+                                <div class="input-group-prepend"><span class="input-group-text">Max</span></div>
+                                <input type="number" class="form-control" value="${sch.quota}" 
+                                       onchange="updateMeta(${sch.id}, 'quota', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-2" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                        <small class="text-muted d-block mb-2 text-right">Enrolled: <span id="count-${sch.id}">${sch.students.length}</span> / ${sch.quota}</small>
+                        <div id="sch-body-${sch.id}" style="min-height: 50px;">
+                            ${sch.students.map(u => `
+                                <div class="alert alert-light border p-1 mb-1 shadow-sm user-draggable" draggable="true" ondragstart="drag(event, ${u.id})" id="user-${u.id}">
+                                    <div class="d-flex justify-content-between">
+                                        <strong>${u.name}</strong>
+                                        <small>${u.nim}</small>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+                `;
+                container.append(cardHtml);
+            });
+        }
+
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+
+        function drag(ev, userId) {
+            ev.dataTransfer.setData("userId", userId);
+        }
+
+        function drop(ev, targetSchId) {
+            ev.preventDefault();
+            var userId = ev.dataTransfer.getData("userId");
+            if (!userId) return;
+
+            // Optimistic UI Update (optional, or wait for server)
+            // Let's wait for server to ensure quota checks
+
+            $.post("{% url 'war:admin_control' %}", {
+                command: 'move_student',
+                user_id: userId,
+                target_schedule_id: targetSchId,
+                csrfmiddlewaretoken: $("input[name='csrfmiddlewaretoken']").val()
+            }, function (resp) {
+                if (resp.status === 'success') {
+                    // Reload data to refresh UI fully (simplest)
+                    loadSessionData($('#session_select_data').val());
+                } else {
+                    alert("Move failed: " + resp.message);
+                }
+            });
+        }
+
+        function updateMeta(schId, field, value) {
+            var data = {
+                command: 'update_schedule_meta',
+                schedule_id: schId,
+                csrfmiddlewaretoken: $("input[name='csrfmiddlewaretoken']").val()
+            };
+            data[field] = value;
+
+            $.post("{% url 'war:admin_control' %}", data, function (resp) {
+                if (resp.status !== 'success') {
+                    alert("Update failed: " + resp.message);
+                }
+            });
+        }
+    </script>
+    {% endblock content %}

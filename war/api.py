@@ -27,9 +27,12 @@ def krs_war(request, slug):
         
         selected_pk = -1
         schedule_name = None
-        if request.user.userdata.schedule:
-            selected_pk = request.user.userdata.schedule.pk
-            schedule_name = request.user.userdata.schedule.name
+        
+        # Get schedule for THIS session
+        user_sch = request.user.userdata.get_schedule_for_session(session)
+        if user_sch:
+            selected_pk = user_sch.pk
+            schedule_name = user_sch.name
 
         return JsonResponse({
             "selected_pk" : selected_pk,
@@ -42,18 +45,20 @@ def krs_war(request, slug):
         pk = int(json.load(request)['pk']) #Get data from POST request
         if pk == -1:
             userdata = user.userdata
-            sch = userdata.schedule
+            # Determine which schedule to remove based on SESSION logic
+            sch = userdata.get_schedule_for_session(session)
             if sch:
                 logger.warning(f"{userdata.name} blank. from={sch.name}")
                 sch.available += 1
                 sch.save()
-            userdata.schedule = None
+                userdata.schedules.remove(sch)
+            
             userdata.save()
             status = "success"
             message = "Berhasil menghapus Sesi Praktikum"
         else:
             changed = False
-            if user.userdata.schedule:
+            if user.userdata.get_schedule_for_session(session):
                 changed = True
             if pk != -1:
                 schedule = Schedule.objects.get(pk=pk)
@@ -64,8 +69,9 @@ def krs_war(request, slug):
                 else:
                     message = f"Berhasil memilih jadwal praktikum Sesi {schedule.name}"
 
-        if user.userdata.schedule:
-            info_selected = user.userdata.schedule.name
+        info_sch = user.userdata.get_schedule_for_session(session)
+        if info_sch:
+            info_selected = info_sch.name
         else:
             info_selected = None
 

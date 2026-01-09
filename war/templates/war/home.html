@@ -2,20 +2,28 @@
 {% load static %}
 
 {% block head %}
-    <title>Home - Mekanika Batuan 2023/2024</title>
+<title>Home - Mekanika Batuan 2023/2024</title>
 {% endblock head %}
 
 {% block header_tab %}
-    <a href="{% url 'war:show_qr' %}" class="float-right btn btn-outline-primary mt-1 mr-3">QR Code</a>
+<!-- <a href="{% url 'war:show_qr' %}" class="float-right btn btn-outline-primary mt-1 mr-3">QR Code</a> -->
+<a href="{% url 'war:schedule_list_view' %}" class="float-right btn btn-info mt-1 mr-3">Lihat Jadwal Terisi</a>
+{% if user.is_staff %}
+<a href="{% url 'war:admin_control' %}" class="float-right btn btn-warning mt-1 mr-3">Admin Page</a>
+{% endif %}
 {% endblock header_tab %}
 
 {% block content %}
-    {% if session %}
-        {% for ses in session %}
-            <p><center><a href="{% url 'war:krs_war' ses.slug%}">{{ ses.name }}</a></center></p>
-        {% endfor %}
-    {% else %}
-        <p><center>Sesi pemilihan jadwal praktikum belum tersedia saat ini</center></p>
-    {% endif %}
+{% if session %}
+{% for ses in session %}
+<p>
+    <center><a href="{% url 'war:krs_war' ses.slug%}">{{ ses.name }}</a></center>
+</p>
+{% endfor %}
+{% else %}
+<p>
+    <center>Sesi pemilihan jadwal praktikum belum tersedia saat ini</center>
+</p>
+{% endif %}
 
 {% endblock content %}

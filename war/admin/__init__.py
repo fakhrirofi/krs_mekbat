@@ -18,25 +18,27 @@ class SessionAdmin(ModelAdmin):
         return obj.schedule_set.count()
 
     def registered(self, obj):
-        return sum(schedule.userdata_set.count() for schedule in obj.schedule_set.all())
+        return sum(schedule.users_enrolled.count() for schedule in obj.schedule_set.all())
 
 admin.site.register(Session, SessionAdmin)
 
 
 class ScheduleInline(admin.TabularInline):
-    model = UserData
+    model = UserData.schedules.through
     extra = 1
 
 class ScheduleAdmin(ModelAdmin):
     list_display = ['name', 'group_number', 'max_enrolled', 'enrolled', 'available']
     ordering = ['session__pk', 'group_number']
     list_filter = ['session']
-    inlines = [ScheduleInline]
+    inlines = [
+        # ScheduleInline # M2M inline is tricky without through model displayed nicely
+    ]
 
     def enrolled(self, obj):
-        obj.available = obj.max_enrolled - obj.userdata_set.count()
+        obj.available = obj.max_enrolled - obj.users_enrolled.count()
         obj.save()
-        return obj.userdata_set.count()
+        return obj.users_enrolled.count()
 
     def session(self, obj):
         return self.session.name
@@ -45,23 +47,26 @@ admin.site.register(Schedule, ScheduleAdmin)
 
 
 class UserDataAdmin(ModelAdmin):
-    list_display = ['schedule', 'group_number', 'nim', 'name', 'handphone']
+    list_display = ['show_schedules', 'nim', 'name', 'handphone']
     search_fields = ['name', 'nim']
-    list_filter = ['schedule__session']
-    ordering = ['schedule__session__pk', 'schedule__group_number', 'nim']
+    list_filter = ['schedules__session']
+    ordering = ['nim']
     list_per_page = 400
 
-    def session(self, obj):
-        if obj.schedule:
-            return obj.schedule.session
-        else:
-            "-"
+    def show_schedules(self, obj):
+        return ", ".join([str(s) for s in obj.schedules.all()])
 
-    def group_number(self, obj):
-        if obj.schedule:
-            return obj.schedule.group_number
-        else:
-            return "-"
+    # def session(self, obj):
+    #     if obj.schedule:
+    #         return obj.schedule.session
+    #     else:
+    #         "-"
+
+    # def group_number(self, obj):
+    #     if obj.schedule:
+    #         return obj.schedule.group_number
+    #     else:
+    #         return "-"
 
 admin.site.register(UserData, UserDataAdmin)
 
@@ -116,7 +121,7 @@ class PresenceDataAdmin(ModelAdmin):
     search_fields = ['name', 'nim']
     list_display = ['schedule', 'group_number', 'nim', 'name', 'attendance', 'datetime']
     list_filter = ['presence__event__session', 'presence__event']
-    ordering = ['presence__pk', 'user__userdata__schedule__group_number', 'user__userdata__nim']
+    ordering = ['presence__pk', 'user__userdata__nim']
     list_per_page = 300
 
     def session(self, obj):
@@ -132,8 +137,11 @@ class PresenceDataAdmin(ModelAdmin):
         return obj.presence.name
 
     def group_number(self, obj):
-        if obj.user.userdata.schedule:
-            return obj.user.userdata.schedule.group_number
+        # Trying to find schedule matching the session of the presence
+        session = obj.presence.event.session
+        sch = obj.user.userdata.get_schedule_for_session(session)
+        if sch:
+            return sch.group_number
         else:
             return "-"
     

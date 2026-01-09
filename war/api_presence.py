@@ -24,9 +24,21 @@ def api_attend(request):
     if not is_valid(request):
         return authentication_error(request)
 
-    enc = request.POST.get("enc", "")
-    user_id = decrypt(enc)
-    presence_id = int(request.POST.get("presence_id", "0"))
+    try:
+        if not request.POST.get("presence_id") or not request.POST.get("enc"):
+             return JsonResponse({
+                "status_code"   : 400,
+                "message"       : "missing presence_id or enc"
+            }, status=400)
+
+        enc = request.POST.get("enc", "")
+        user_id = decrypt(enc)
+        presence_id = int(request.POST.get("presence_id", "0"))
+    except ValueError:
+        return JsonResponse({
+            "status_code"   : 400,
+            "message"       : "invalid data format"
+        }, status=400)
 
     # check qr code validation
     if user_id == "invalid":
