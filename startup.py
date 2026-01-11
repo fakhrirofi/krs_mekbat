@@ -68,9 +68,10 @@ def setup():
     call_command('collectstatic', interactive=False)
 
     User = get_user_model()
-    username = 'mpdadmin'
-    password = '#simkom456#'
-    email = 'admin@hmtaupnvy.com'
+    # Get credentials from environment variables
+    username = os.environ.get('SUPERUSER_USERNAME', 'admin')
+    email = os.environ.get('SUPERUSER_EMAIL', 'admin@hmtaupnvy.com')
+    password = os.environ.get('SUPERUSER_PASSWORD', 'password')
 
     if not User.objects.filter(username=username).exists():
         print(f"Creating superuser {username}...")
