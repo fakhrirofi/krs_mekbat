@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head %}
-    <title>Jadwal - Mekanika Batuan 2023/2024</title>
+<title>Jadwal - Lab Simulasi dan Komputasi</title>
 {% endblock head %}
 
 <script>
@@ -10,16 +10,16 @@
 </script>
 
 {% block header_tab %}
-    <a href="{% url 'war:home' %}" class="float-right btn btn-outline-primary mt-1 mr-3">Home</a>
+<a href="{% url 'war:home' %}" class="float-right btn btn-outline-primary mt-1 mr-3">Home</a>
 {% endblock header_tab %}
 
 {% block content %}
 
-    <div id="infoSelected" class="alert alert-success"></div>
+<div id="infoSelected" class="alert alert-success"></div>
 
-    {# <div id="alertMessage" class="hidden"></div> #}
+{# <div id="alertMessage" class="hidden"></div> #}
 
-    <table class="styled-table">
+<table class="styled-table">
     <thead>
         <tr>
             <th>Kelompok</th>
@@ -29,7 +29,7 @@
         </tr>
     </thead>
     <tbody id="tableList">
-    <script src="{% static 'war/js/tbody_krs.js' %}"></script>
+        <script src="{% static 'war/js/tbody_krs.js' %}"></script>
     </tbody>
-    </table>
+</table>
 {% endblock content %}

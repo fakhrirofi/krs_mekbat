@@ -2,19 +2,20 @@
 {% load static %}
 
 {% block head %}
-    <title>Home - Mekanika Batuan 2023/2024</title>
+<title>Home - Lab Simulasi dan Komputasi</title>
 {% endblock head %}
 
 {% block content %}
 
-    {% for post in posts %}
-    <article class="post">
-        <h4 class="post-title">{{ post.title }}</h4>
-        <p class="post-meta">Posted by <span class="post-author">{{ post.author }}</span> on <span class="post-date">{{ post.date }}</span></p>
-        <div class="post-content">
-            {{ post.content|linebreaks }}
-        </div>
-    </article>
-    {% endfor %}
+{% for post in posts %}
+<article class="post">
+    <h4 class="post-title">{{ post.title }}</h4>
+    <p class="post-meta">Posted by <span class="post-author">{{ post.author }}</span> on <span class="post-date">{{
+            post.date }}</span></p>
+    <div class="post-content">
+        {{ post.content|linebreaks }}
+    </div>
+</article>
+{% endfor %}
 
 {% endblock content %}
